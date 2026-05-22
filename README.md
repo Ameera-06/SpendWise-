@@ -1,20 +1,31 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+## 🛠️ Run Locally
 
-# Run and deploy your AI Studio app
+### Prerequisites
+Node.js v18+ must be installed:
+https://nodejs.org
 
-This contains everything you need to run your app locally.
+```bash
+# 1. Clone the repo
+git clone https://github.com/Ameera-06/SpendWise.git
 
-View your app in AI Studio: https://ai.studio/apps/4db213cb-0878-45d3-9358-24db59feb9c4
+# 2. Enter the folder
+cd SpendWise
 
-## Run Locally
+# 3. Install dependencies
+npm install
 
-**Prerequisites:**  Node.js
+# 4. Start the app
+npm run dev
+```
+
+## Deployment
+
+npm run build
 
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+firebase deploy
+
+#Live link
+
+
+https://spendwiseapp-77113.web.app
