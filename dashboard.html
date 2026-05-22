@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Transactions | SpendWise 💰</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <div class="nav-brand">SpendWise 💰</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-item active">Dashboard</a>
+            <a href="history.html" class="nav-item">History</a>
+        </div>
+        <div class="nav-actions">
+            <span id="userNameWelcome">Welcome!</span>
+            <button id="openChangePasswordModal" class="btn btn-outline btn-sm">Update Password 🔑</button>
+            <button id="openTrashModal" class="btn-icon" title="Trash / Deleted History">🗑️</button>
+            <button id="logoutBtn" class="btn btn-outline btn-sm">Logout</button>
+        </div>
+    </nav>
+
+    <div class="dashboard-hero" style="height: 160px; background: var(--bg); display: flex; align-items: center; justify-content: center; margin-bottom: 40px; border-bottom: 1px solid var(--border);">
+        <div style="text-align: center;">
+            <h1 style="color: var(--primary); font-size: 2.8rem; text-shadow: 0 0 25px rgba(212, 175, 55, 0.25); letter-spacing: 1px;">Your Financial Overview</h1>
+            <p style="color: var(--text-muted); font-weight: 500; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px;">Master your wealth with SpendWise</p>
+        </div>
+    </div>
+
+    <main class="dashboard-container">
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card income-card">
+                <p>Total Income <span style="color: #2ecc71; font-weight: 800; font-size: 1.1rem; margin-left: 4px;">↑</span></p>
+                <h2 id="totalIncome">₹0.00</h2>
+                <div class="card-icon">📈</div>
+            </div>
+            <div class="stat-card expense-card">
+                <p>Total Expense <span style="color: #e74c3c; font-weight: 800; font-size: 1.1rem; margin-left: 4px;">↓</span></p>
+                <h2 id="totalExpense">₹0.00</h2>
+                <div class="card-icon">📉</div>
+            </div>
+            <div class="stat-card balance-card">
+                <p>Total Balance</p>
+                <h2 id="totalBalance">₹0.00</h2>
+                <div class="card-icon">💎</div>
+            </div>
+        </div>
+
+        <!-- Manage and History Grid side-by-side -->
+        <div class="main-grid" style="margin-bottom: 32px;">
+            <!-- Add Transaction Form -->
+            <section class="card form-section" style="margin-bottom: 0;">
+                <h3 id="formTitle">Manage Transactions</h3>
+                <form id="transactionForm" class="vertical-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="desc">Description</label>
+                            <input type="text" id="desc" placeholder="Enter transaction details..." required aria-label="Transaction Description">
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount (₹)</label>
+                            <input type="number" id="amount" placeholder="0" step="1" required aria-label="Transaction Amount">
+                        </div>
+                        <div class="form-group">
+                            <label for="type">Type</label>
+                            <select id="type" aria-label="Transaction Type">
+                                <option value="income">📈 Income</option>
+                                <option value="expense">📉 Expense</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateInput">Date</label>
+                            <input type="date" id="dateInput" required aria-label="Transaction Date">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" aria-label="Transaction Category">
+                                <option value="Food">🍔 Food</option>
+                                <option value="Salary">💰 Salary</option>
+                                <option value="Rent">🏠 Rent</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Health">🏥 Health</option>
+                                <option value="Travel">✈️ Travel</option>
+                                <option value="Education">🎓 Education</option>
+                                <option value="Other">✨ Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-top: 10px;">
+                            <button type="submit" id="submitBtn" class="btn btn-primary w-full" aria-label="Save Transaction">Save Transaction</button>
+                        </div>
+                    </div>
+                    <button type="button" id="cancelEditBtn" class="btn btn-outline" style="display: none; margin-top: 10px; width: fit-content; align-self: flex-end;" aria-label="Cancel Editing Transaction">Cancel Edit</button>
+                </form>
+            </section>
+
+            <!-- Transaction Log -->
+            <section class="card history-section" style="margin-bottom: 0;">
+                <div class="section-header">
+                    <h3 id="historyTitle">Transaction Log</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="resetFilterBtn" class="btn btn-sm btn-link" style="display: none; color: var(--primary); text-decoration: none; font-weight: 600;" aria-label="Clear filters and show all transactions">← Back to All</button>
+                        <button id="openHistoryModal" class="btn btn-sm btn-outline" aria-label="Open Full History Report">Full History Report</button>
+                        <button id="viewToggleBtn" class="btn-link" aria-label="Toggle Filter Visibility">Filters →</button>
+                    </div>
+                </div>
+
+                <div id="filterBar" class="filter-bar" style="display: none;">
+                    <input type="text" id="search" placeholder="Search transactions..." aria-label="Search transactions">
+                    <select id="filter" aria-label="Filter transactions by type">
+                        <option value="all">📁 All Types</option>
+                        <option value="income">📈 Income</option>
+                        <option value="expense">📉 Expense</option>
+                    </select>
+                </div>
+
+                <div id="transactionList" class="transaction-list">
+                    <!-- Dynamic Content -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Graphs Section (Full Width) -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px; margin-bottom: 32px;">
+            <div class="card chart-card-container" style="margin-bottom: 0; width: 100%;">
+                <h3>Income vs Expense Analysis</h3>
+                <div id="categoryBreakdown" style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                    <div id="bar-chart-container" style="width: 100%; max-width: 800px;"></div>
+                </div>
+            </div>
+
+            <!-- Budget Tracker (Visual) -->
+            <div class="card budget-tracker-card">
+                <h3>Budget Tracker</h3>
+                <div id="budgetDisplayList" class="budget-progress-list">
+                    <!-- Dynamic Progress Bars -->
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button id="openBudgetModal" class="btn btn-outline btn-sm w-full">Manage Budgets ⚙️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Summaries -->
+        <div class="card monthly-summary-section">
+            <h3>Monthly Summaries</h3>
+            <div id="monthlySummaryList" class="monthly-summary-list"></div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast">Transaction deleted</div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 40px 20px;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+                <h2 style="margin-bottom: 15px; color: white;">Are you sure?</h2>
+                <p style="color: var(--text-muted); margin-bottom: 30px;">Do you really want to delete this transaction? This action cannot be undone.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="cancelDeleteBtn" class="btn btn-outline" style="min-width: 120px;">No, Cancel</button>
+                    <button id="confirmDeleteBtn" class="btn btn-primary" style="min-width: 120px; background: var(--danger);">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detailed Transaction History</h2>
+                <span id="closeHistoryModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="history-controls" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 25px;">
+                    <div style="display: flex; gap: 10px; flex: 1; max-width: 600px;">
+                        <input type="text" id="historySearch" placeholder="Search in history..." class="form-control" style="margin-bottom: 0; flex: 2;">
+                        <select id="historyFilter" class="form-control" style="margin-bottom: 0; flex: 1;">
+                            <option value="all">All Types</option>
+                            <option value="income">Income 📈</option>
+                            <option value="expense">Expense 📉</option>
+                        </select>
+                    </div>
+                    <button id="downloadCsv" class="btn btn-sm btn-outline">Export CSV</button>
+                </div>
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Transactions -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trash (Deleted History) Modal -->
+    <div id="trashModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Deleted History (Trash)</h2>
+                <span id="closeTrashModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle" style="margin-bottom: 20px;">Restore transactions or delete them permanently.</p>
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trashTableBody">
+                            <!-- Deleted transactions -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Management Modal -->
+    <div id="budgetModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Category Budgets</h2>
+                <span id="closeBudgetModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle" style="margin-bottom: 20px;">Set your monthly spending limits per category.</p>
+                <form id="budgetForm" class="vertical-form">
+                    <div id="budgetFieldsContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                        <!-- Dynamically populated budget inputs -->
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 10px;">
+                        <button type="button" id="cancelBudgetBtn" class="btn btn-outline w-full">Cancel</button>
+                        <button type="submit" class="btn btn-primary w-full">Save Budgets</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Change Password Modal -->
+    <div id="changePasswordModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Directly Update Password</h2>
+                <span id="closeChangePasswordModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle" style="margin-bottom: 20px;">Directly update your account password. No confirmation link or email needed.</p>
+                <form id="changePasswordForm" class="vertical-form">
+                    <div class="form-group">
+                        <label>Enter your current password</label>
+                        <div class="password-wrapper" style="position: relative;">
+                            <input type="password" id="currentDashPassword" placeholder="Enter your current password" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Enter the new password</label>
+                        <div class="password-wrapper" style="position: relative;">
+                            <input type="password" id="newDashPassword" placeholder="Enter the new password" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Re-enter the password</label>
+                        <div class="password-wrapper" style="position: relative;">
+                            <input type="password" id="confirmDashPassword" placeholder="Re-enter the password" required>
+                        </div>
+                    </div>
+                    
+                    <div id="changePasswordError" class="info-msg" style="margin-top: 15px; font-size: 0.9rem; line-height: 1.4;"></div>
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button type="button" id="cancelChangePasswordBtn" class="btn btn-outline w-full">Cancel</button>
+                        <button type="submit" id="confirmChangePasswordBtn" class="btn btn-primary w-full">Save Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Reset Button (Appears when filtered) -->
+    <div id="floatingResetContainer" class="floating-reset-container">
+        <button id="floatingResetBtn" class="floating-reset-btn">
+            <span class="btn-text">Showing Filtered Results</span>
+            <span class="btn-badge">Back to All</span>
+        </button>
+    </div>
+
+    <script type="module" src="script.ts"></script>
+</body>
+</html>

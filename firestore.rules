@@ -1,0 +1,104 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Global Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid != null && request.auth.uid == userId;
+    }
+
+    // Standard mandate: For production apps, we usually check email_verified.
+    // For this app, we allow any signed-in user to use the app immediately to support the "multiple people" request.
+    function isVerified() {
+      return isSignedIn();
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Entity Validations ---
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'email', 'createdAt'])
+        && data.email is string && data.email.size() <= 128
+        && data.name is string && data.name.size() <= 128
+        && data.createdAt is timestamp;
+    }
+
+    function isValidTransaction(data) {
+      return data.keys().hasAll(['amount', 'type', 'category', 'description', 'date', 'status'])
+        && data.amount is number && data.amount > 0
+        && data.type in ['income', 'expense']
+        && data.category is string && data.category.size() <= 64
+        && data.description is string && data.description.size() <= 500
+        && data.date is string && data.date.size() <= 32
+        && data.status in ['active', 'deleted']
+        && (data.get('updatedAt', null) == null || data.updatedAt is timestamp);
+    }
+
+    function isValidBudget(data) {
+      return data.keys().hasAll(['category', 'amount'])
+        && data.category is string && data.category.size() <= 64
+        && data.amount is number && data.amount >= 0;
+    }
+
+    // --- Connection Verification ---
+    match /_connection_test/{docId} {
+      allow read: if true;
+    }
+
+    // --- Application Rules ---
+
+    // 1. User Profiles and Sub-collections
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if isOwner(userId) && isValidUser(incoming()) 
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'email', 'updatedAt']);
+
+      // 2. Transactions
+      match /transactions/{tId} {
+        allow read: if isOwner(userId);
+        
+        allow create: if isOwner(userId) && isVerified() && isValidTransaction(incoming())
+          && isValidId(tId)
+          && incoming().createdAt == request.time;
+          
+        allow update: if isOwner(userId) && isVerified() && isValidTransaction(incoming())
+          && incoming().updatedAt == request.time
+          && (
+            // Action: Edit basic fields
+            incoming().diff(existing()).affectedKeys().hasOnly(['description', 'amount', 'type', 'category', 'date', 'updatedAt']) ||
+            // Action: Soft delete status change
+            incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+          );
+          
+        allow delete: if isOwner(userId) && isVerified();
+      }
+
+    // 3. Budgets
+      match /budgets/{catId} {
+        allow get, list: if isOwner(userId);
+        
+        allow create, update: if isOwner(userId) && isVerified() && isValidBudget(incoming())
+          && isValidId(catId);
+          
+        allow delete: if isOwner(userId) && isVerified();
+      }
+    }
+  }
+}

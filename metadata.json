@@ -1,0 +1,6 @@
+{
+  "name": "SpendWise",
+  "description": "A premium black and gold themed expense tracker with Firebase cloud storage, real-time budgeting, and detailed financial analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

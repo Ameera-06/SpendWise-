@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - SpendWise</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <div class="nav-brand">SpendWise 💰</div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-item">Dashboard</a>
+            <a href="history.html" class="nav-item active">History</a>
+        </div>
+        <div class="nav-actions">
+            <span id="userNameWelcome">Welcome!</span>
+            <button id="openChangePasswordModal" class="btn btn-outline btn-sm">Update Password 🔑</button>
+            <button id="logoutBtn" class="btn btn-outline btn-sm">Logout</button>
+        </div>
+    </nav>
+
+    <main class="history-page-container">
+        <section class="card history-section" style="min-height: 80vh;">
+            <div class="section-header">
+                <h3 id="historyTitle">Full Transaction History</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="resetFilterBtnHistory" class="btn btn-sm btn-link" style="display: none; color: var(--primary); text-decoration: none; font-weight: 600;" aria-label="Clear filters and show all history">← Back to All</button>
+                    <button id="openHistoryModalFull" class="btn btn-sm btn-outline">Analytics Report</button>
+                    <button id="viewToggleBtnHistory" class="btn-link">Filters →</button>
+                </div>
+            </div>
+
+            <div id="filterBarHistory" class="filter-bar" style="display: none;">
+                <input type="text" id="searchHistory" placeholder="Search transactions...">
+                <select id="filterHistory">
+                    <option value="all">📁 All Types</option>
+                    <option value="income">📈 Income</option>
+                    <option value="expense">📉 Expense</option>
+                </select>
+            </div>
+
+            <div id="transactionListHistory" class="transaction-list" style="max-height: none;">
+                <!-- Full history Content -->
+            </div>
+        </section>
+    </main>
+
+    <div id="toast" class="toast">Transaction deleted</div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div class="modal-body" style="padding: 40px 20px;">
+                <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
+                <h2 style="margin-bottom: 15px; color: white;">Are you sure?</h2>
+                <p style="color: var(--text-muted); margin-bottom: 30px;">Do you really want to delete this transaction? This action cannot be undone.</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="cancelDeleteBtn" class="btn btn-outline" style="min-width: 120px;">No, Cancel</button>
+                    <button id="confirmDeleteBtn" class="btn btn-primary" style="min-width: 120px; background: var(--danger);">Yes, Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direct Change Password Modal -->
+    <div id="changePasswordModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2>Directly Update Password</h2>
+                <span id="closeChangePasswordModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="subtitle" style="margin-bottom: 20px;">Directly update your account password. No confirmation link or email needed.</p>
+                <form id="changePasswordForm" class="vertical-form">
+                    <div class="form-group">
+                        <label>Enter the new password</label>
+                        <div class="password-wrapper" style="position: relative;">
+                            <input type="password" id="newDashPassword" placeholder="Enter the new password" required>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>Re-enter the password</label>
+                        <div class="password-wrapper" style="position: relative;">
+                            <input type="password" id="confirmDashPassword" placeholder="Re-enter the password" required>
+                        </div>
+                    </div>
+                    
+                    <div id="changePasswordError" class="info-msg" style="margin-top: 15px; font-size: 0.9rem; line-height: 1.4;"></div>
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <button type="button" id="cancelChangePasswordBtn" class="btn btn-outline w-full">Cancel</button>
+                        <button type="submit" id="confirmChangePasswordBtn" class="btn btn-primary w-full">Save Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detailed Transaction History</h2>
+                <span id="closeHistoryModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="history-controls" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 25px;">
+                    <div style="display: flex; gap: 10px; flex: 1; max-width: 600px;">
+                        <input type="text" id="historySearch" placeholder="Search in history..." class="form-control" style="margin-bottom: 0; flex: 2;">
+                        <select id="historyFilter" class="form-control" style="margin-bottom: 0; flex: 1;">
+                            <option value="all">All Types</option>
+                            <option value="income">Income 📈</option>
+                            <option value="expense">Expense 📉</option>
+                        </select>
+                    </div>
+                    <button id="downloadCsv" class="btn btn-sm btn-outline">Export CSV</button>
+                </div>
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Transactions -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import logic last -->
+    <script type="module" src="script.ts"></script>
+</body>
+</html>

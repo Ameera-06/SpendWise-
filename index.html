@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | SpendWise 💰</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+    <nav class="navbar">
+        <div class="nav-brand">SpendWise 💰</div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>SpendWise 💰</h1>
+            <p class="subtitle">Premium Expense Tracker for Smart Savers</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️‍🗨️</span>
+                    </div>
+                </div>
+                
+                <div id="loginGlobalError" class="error-msg"></div>
+                
+                <button type="submit" class="btn btn-primary">Sign In</button>
+                <div class="auth-footer">
+                    <a href="forgot-password.html" class="auth-link">Forgot Password?</a>
+                </div>
+            </form>
+
+            <div class="auth-switch">
+                <p>New here? <a href="signup.html" class="auth-link">Create an account</a></p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="script.ts"></script>
+</body>
+</html>

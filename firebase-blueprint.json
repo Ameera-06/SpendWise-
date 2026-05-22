@@ -1,0 +1,57 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "An income or expense entry",
+      "type": "object",
+      "properties": {
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["active", "deleted"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["amount", "type", "date", "status"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "User defined budget for a category",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["category", "amount"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Root users collection"
+    },
+    "users/{userId}/transactions": {
+      "schema": "Transaction",
+      "description": "User transactions"
+    },
+    "users/{userId}/budgets": {
+      "schema": "Budget",
+      "description": "User budgets"
+    }
+  }
+}
